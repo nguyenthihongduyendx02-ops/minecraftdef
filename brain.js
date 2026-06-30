@@ -8,6 +8,16 @@ const LEASH_RADIUS = parseInt(process.env.LEASH_RADIUS || '0', 10) // 0 = không
 
 let homePos = null // điểm gốc, set lần đầu brain chạy
 
+// ---- Mục tiêu hiện tại do người chơi giao (qua console hoặc chat trong game) ----
+let currentGoal = null
+function setGoal(text) {
+  currentGoal = text && text.trim() ? text.trim() : null
+  console.log(currentGoal ? `🎯 Mục tiêu mới: ${currentGoal}` : '🎯 Đã xoá mục tiêu, brain quay lại tự quyết định.')
+}
+function getGoal() {
+  return currentGoal
+}
+
 if (!GEMINI_API_KEY) {
   console.log('⚠️ Thiếu GEMINI_API_KEY trong .env — Brain sẽ lỗi khi được kích hoạt.')
 }
@@ -52,7 +62,7 @@ function buildStatePrompt(bot) {
     nearbyEntities
   }
 
-  return `${ACTIONS_DESC}\nTrạng thái hiện tại:\n${JSON.stringify(state, null, 2)}`
+  return `${ACTIONS_DESC}\n${currentGoal ? `MỤC TIÊU NGƯỜI CHƠI GIAO (ưu tiên cao nhất, trừ khi nguy hiểm tính mạng — health<8 hoặc mob kề sát thì vẫn ưu tiên "flee"/"attack_nearest_hostile"):\n"${currentGoal}"\n\n` : ''}Trạng thái hiện tại:\n${JSON.stringify(state, null, 2)}`
 }
 
 async function askGemma(prompt) {
@@ -190,4 +200,4 @@ function stopBrain() {
   homePos = null
 }
 
-module.exports = { startBrain, stopBrain }
+module.exports = { startBrain, stopBrain, setGoal, getGoal }
