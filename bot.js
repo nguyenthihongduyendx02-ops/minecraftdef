@@ -4,7 +4,7 @@ const readline = require('readline')
 const { exec } = require('child_process')
 const { pathfinder } = require('mineflayer-pathfinder')
 const collectBlockPlugin = require('mineflayer-collectblock').plugin
-const { startBrain, stopBrain } = require('./brain')
+const { startBrain, stopBrain, setGoal, getGoal } = require('./brain')
 const { startNaturalIdleLoop, stopNaturalIdleLoop } = require('./humanize')
 
 // ===== Cấu hình (đọc từ .env, KHÔNG hardcode mật khẩu) =====
@@ -260,6 +260,19 @@ function connect() {
     if (username === USERNAME) return
     console.log(`💬 <${username}> ${message}`)
     handleMessage(message)
+
+    // Ra lệnh ngay trong game: gõ "bot: <việc cần làm>" trong chat server
+    // vd: "bot: đào 10 oak_log rồi quay lại đây"
+    const m = message.match(/^bot[:,]\s*(.+)/i)
+    if (m) {
+      if (/^(clear|huỷ|hủy|dừng|stop)$/i.test(m[1].trim())) {
+        setGoal(null)
+        try { bot.chat('Đã huỷ mục tiêu, mình tự quyết định nhé.') } catch (e) {}
+      } else {
+        setGoal(m[1].trim())
+        try { bot.chat(`OK, mình sẽ: ${m[1].trim()}`) } catch (e) {}
+      }
+    }
   })
 
   bot.on('message', (jsonMsg) => {
@@ -290,6 +303,8 @@ function showHelp() {
   console.log('idle              - cho bot nghỉ')
   console.log('wake              - bật lại bot')
   console.log('brain on/off      - bật/tắt bộ não Gemma khi đang chạy')
+  console.log('goal <mục tiêu>   - giao việc cho bot, vd: goal đào 10 oak_log')
+  console.log('goal clear        - xoá mục tiêu, để bot tự quyết định')
   console.log('───────────────────────────────')
 }
 
@@ -299,6 +314,7 @@ function showStatus() {
   console.log(`💾 RAM: ${memUsageMB()} MB`)
   console.log(`🔁 Tổng reconnect: ${totalReconnects}`)
   console.log(`🧠 Brain: ${brainActive ? 'ON' : 'OFF'}`)
+  console.log(`🎯 Mục tiêu: ${getGoal() || '(không có — bot tự quyết định)'}`)
   if (shuttingDown) {
     console.log('💤 Đang NGHỈ. Gõ "wake" để bật lại.')
   } else if (bot && connectedSince) {
@@ -354,6 +370,11 @@ rl.on('line', (line) => {
       } else {
         console.log('ℹ️ Cú pháp: brain on | brain off')
       }
+      break
+    case 'goal':
+      if (!arg) { console.log('⚠️ Cú pháp: goal <mục tiêu>   hoặc   goal clear'); break }
+      if (arg.toLowerCase() === 'clear') { setGoal(null); break }
+      setGoal(arg)
       break
     default: console.log(`❓ Không hiểu lệnh "${cmd}". Gõ "help".`)
   }
