@@ -1,0 +1,18 @@
+# ===== Thông tin server Minecraft =====
+MC_HOST=rune.pikamc.vn
+MC_PORT=25078
+MC_USERNAME=lamthanh
+MC_PASSWORD=matkhau123
+MC_VERSION=1.20.1
+
+# ===== Gemini API (cho Gemma 4) =====
+# Lấy key tại: https://aistudio.google.com/app/apikey
+GEMINI_API_KEY=AQ.Ab8RN6IPF224H455FyPk-kSBSIdM5pzOM0UwGcVLoiFmlEhUOg
+GEMMA_MODEL=gemma-4-31b-it
+
+# ===== Tuỳ chỉnh Brain =====
+# true = dùng Gemma điều khiển hành động, false = chỉ anti-afk đơn giản (không tốn API)
+BRAIN_ENABLED=true
+# Chu kỳ gọi API (mili giây). Để cao hơn nếu muốn tiết kiệm quota.
+BRAIN_INTERVAL_MS=8000
+LEASH_RADIUS=40
